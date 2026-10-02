@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" data-appearance="dark" data-theme="obsidian">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#19181d">
+  <meta name="description" content="A quiet Markdown reader. Open a note, choose a theme, and share a document or passage with a link.">
+  <title>mdweb — a little room for your words</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div class="brand"><button id="outline-toggle" class="icon-button" aria-label="Toggle outline" aria-expanded="false">☰</button><a href="/" aria-label="mdweb home"><span class="brand-mark">m<span>↗</span></span>mdweb</a><span class="brand-divider"></span><span id="document-name">Your Markdown, anywhere</span></div>
+    <div class="actions"><button id="open-file">Open file</button><button id="edit-toggle">Edit</button><button id="appearance" class="icon-button" aria-label="Switch to light appearance">☀</button><button id="share" class="primary">Share <span aria-hidden="true">↗</span></button></div>
+  </header>
+  <div class="workspace">
+    <aside id="sidebar" aria-label="Document outline">
+      <div class="sidebar-label">ON THIS PAGE <span id="heading-count"></span></div>
+      <nav id="outline" aria-label="Headings"></nav>
+      <div class="reading-settings"><label for="theme">Reading theme</label><select id="theme"><option value="obsidian">Obsidian</option><option value="paper">Paper</option><option value="midnight">Midnight</option></select><div class="setting-row"><span>Text size</span><button id="smaller" aria-label="Smaller text">A−</button><button id="larger" aria-label="Larger text">A+</button></div><button id="download" class="download">↓ Download Markdown</button><button id="print">Print / save PDF</button></div>
+      <div class="sidebar-footer"><span class="status-dot"></span>Read locally. Share by link.<a href="https://github.com/lmdevv/mdweb" target="_blank" rel="noopener noreferrer">Source ↗</a></div>
+    </aside>
+    <main id="main"><div class="document-meta"><span id="document-kind">MARKDOWN DOCUMENT</span><span id="reading-time"></span></div><div id="error" role="alert" hidden></div><article id="document" class="markdown" aria-label="Markdown document"></article><footer class="document-footer"><span>A little room for your words.</span><span>mdweb</span></footer></main>
+    <section id="editor" hidden aria-label="Markdown editor"><div class="editor-header"><label for="source">MARKDOWN SOURCE</label><button id="apply">Apply changes</button></div><textarea id="source" spellcheck="false" aria-label="Markdown source"></textarea><p>Changes stay in this browser until you share or download them.</p></section>
+  </div>
+  <div id="selection-actions" hidden role="group" aria-label="Share selected text"><button id="share-passage">Share passage</button><button id="share-context">Share in context</button></div>
+  <dialog id="share-dialog" aria-labelledby="share-title"><button id="close-share" class="close" aria-label="Close share dialog">×</button><span class="dialog-eyebrow">TAKE IT WITH YOU</span><h2 id="share-title">Share this document</h2><p id="share-description">A snapshot of your document and reading theme.</p><div id="qr-container"><canvas id="qr" aria-label="Document QR code"></canvas><p id="qr-message" hidden></p></div><div class="share-url"><label class="sr-only" for="share-url">Share link</label><input id="share-url" readonly><button id="copy-link" class="primary">Copy link</button></div><div class="share-extra"><button id="native-share" hidden>Share with an app</button><button id="save-qr">Download QR</button></div><p class="share-note">Anyone with the full link can read this snapshot.</p></dialog>
+  <input id="file-input" type="file" accept=".md,.markdown,.mkd,.txt,text/markdown,text/plain" hidden>
+  <div id="toast" role="status" hidden></div>
+  <script type="module" src="/assets/app.js"></script>
+</body>
+</html>
