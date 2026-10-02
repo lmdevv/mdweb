@@ -21,6 +21,12 @@ test('browser encoding is interoperable with zlib and preserves selection', asyn
   assert.deepEqual(decoded, payload);
 });
 test('empty Markdown is valid', async () => { assert.equal((await decodeHash(hash({ md: '' }))).md, ''); });
+test('several highlights round-trip and invalid ones are dropped', async () => {
+  const highlights = [{ start: 0, end: 5, quote: 'hello' }, { start: 6, end: 11, quote: 'world' }];
+  const decoded = await decodeHash(hash({ md: 'hello world', highlights: [...highlights, { start: -1, end: 1, quote: 'no' }, { start: 0, end: 4, quote: 'hey' }] }));
+  assert.deepEqual(decoded.highlights, highlights);
+  assert.equal(decoded.selection, undefined);
+});
 test('malformed links and gzip are rejected', async () => {
   for (const value of ['#v=2&doc=abc', '#v=1&doc=!', '#v=1&doc=a', '#v=1&doc=aaaa', hash({ wrong: true }), '#v=1&doc=' + gzipSync(JSON.stringify(fixture)).toString('base64url')]) {
     await assert.rejects(decodeHash(value));

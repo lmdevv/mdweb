@@ -3,18 +3,22 @@ import footnote from 'markdown-it-footnote';
 import mark from 'markdown-it-mark';
 import taskLists from 'markdown-it-task-lists';
 import DOMPurify from 'dompurify';
+import { imageRule, mountMedia, registerObsidianEmbed, replaceIframes } from './media.js';
+import { registerObsidian, slugify } from './obsidian.js';
 
 function escape(text) { return MarkdownIt().utils.escapeHtml(text); }
 
-export async function renderMarkdown(source, target) {
-  const md = new MarkdownIt({ html: false, linkify: true, typographer: false })
+export async function renderMarkdown(source, target, { title = '' } = {}) {
+  const md = new MarkdownIt({ html: true, linkify: true, typographer: false })
     .use(footnote).use(mark).use(taskLists);
   if (/\$/.test(source)) {
     const [{ default: texmath }, { default: katex }] = await Promise.all([import('markdown-it-texmath'), import('katex')]);
     await import('katex/dist/katex.min.css');
     md.use(texmath, { engine: katex, delimiters: 'dollars', katexOptions: { throwOnError: false, trust: false, strict: 'ignore' } });
   }
-  md.renderer.rules.image = (tokens, index) => `<span class="media-placeholder">Image: ${escape(tokens[index].content || 'attachment')} · media is not included</span>`;
+  registerObsidianEmbed(md);
+  registerObsidian(md);
+  md.renderer.rules.image = imageRule;
   const originalFence = md.renderer.rules.fence;
   md.renderer.rules.fence = (tokens, index, options, env, self) => {
     const token = tokens[index];
@@ -23,29 +27,43 @@ export async function renderMarkdown(source, target) {
   };
   // Hide YAML properties while preserving the source for editing/download.
   const body = source.replace(/^\uFEFF/, '').replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '');
-  target.innerHTML = DOMPurify.sanitize(md.render(body));
+  // Raw HTML is allowed as in CommonMark; iframes survive sanitizing only to be swapped for known video embeds.
+  const fragment = DOMPurify.sanitize(md.render(body, { title }), {
+    RETURN_DOM_FRAGMENT: true, ADD_TAGS: ['iframe'], FORBID_TAGS: ['style', 'form'],
+    ADD_ATTR: ['controls', 'playsinline', 'data-embed', 'data-id', 'data-start', 'data-width'],
+  });
+  replaceIframes(fragment);
+  target.replaceChildren(fragment);
+  mountMedia(target);
   for (const link of target.querySelectorAll('a[href]')) {
-    if (/^https?:/.test(link.href)) { link.target = '_blank'; link.rel = 'noopener noreferrer'; }
+    if (/^https?:/i.test(link.getAttribute('href'))) { link.target = '_blank'; link.rel = 'noopener noreferrer'; }
   }
   for (const block of target.querySelectorAll('blockquote')) {
     const first = block.querySelector('p');
     const match = first?.textContent.match(/^\[!([\w-]+)\]([+-])?[ \t]*(.*)/);
     if (!match) continue;
-    const title = document.createElement('div');
+    const foldable = Boolean(match[2]);
+    const callout = foldable ? document.createElement('details') : block;
+    const title = document.createElement(foldable ? 'summary' : 'div');
     title.className = 'callout-title';
     title.textContent = match[3] || match[1].replaceAll('-', ' ');
-    block.classList.add('callout');
-    block.dataset.callout = match[1].toLowerCase();
+    callout.classList.add('callout');
+    callout.dataset.callout = match[1].toLowerCase();
     const walker = document.createTreeWalker(first, NodeFilter.SHOW_TEXT);
     const text = walker.nextNode();
     if (text) text.textContent = text.textContent.replace(/^\[![\w-]+\][+-]?[^\n]*(?:\n|$)/, '');
-    block.prepend(title);
-    if (!first.textContent.trim()) first.remove();
+    if (!first.textContent.trim() && !first.querySelector('img, video, audio, .embed')) first.remove();
+    if (foldable) {
+      callout.open = match[2] === '+';
+      callout.append(...block.childNodes);
+      block.replaceWith(callout);
+    }
+    callout.prepend(title);
   }
   const headings = [];
   const ids = new Map();
   for (const heading of target.querySelectorAll('h1,h2,h3,h4,h5,h6')) {
-    const slug = heading.textContent.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, '').trim().replace(/\s+/g, '-') || 'section';
+    const slug = slugify(heading.textContent);
     const count = ids.get(slug) || 0;
     ids.set(slug, count + 1);
     heading.id = count ? `${slug}-${count}` : slug;

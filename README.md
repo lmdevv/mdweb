@@ -16,8 +16,16 @@ From Neovim with [mdw.nvim](https://github.com/lmdevv/mdw.nvim):
 
 Or open a Markdown file, drop one onto the page, or paste into the editor.
 
-Supports GFM tables, task lists, footnotes, highlights, Obsidian callouts,
-syntax highlighting, KaTeX math, and Mermaid diagrams.
+Supports CommonMark with sanitized inline HTML, GFM tables, task lists,
+footnotes, syntax highlighting, KaTeX math, and Mermaid diagrams. Obsidian
+syntax works too: `==highlights==`, callouts (including foldable `[!note]-`),
+`[[wikilinks]]`, `%%comments%%`, `#tags`, and `^block-ids`. Remote images and
+videos render from `![](url)`, `![alt|300](url)`, and `![[embed]]`; YouTube and
+Vimeo links become players. Vault files stay placeholders.
+
+`S` shares the document, `Y` copies the link, `H` highlights the selection, and
+`Ctrl` or `Cmd` `K` jumps to a heading. Select text and choose Highlight; Share
+includes every highlight.
 
 ## Link format
 

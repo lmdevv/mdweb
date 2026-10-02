@@ -59,9 +59,16 @@ export function validatePayload(payload) {
   if (payload.title !== undefined && typeof payload.title !== 'string') throw new Error('Invalid document title.');
   const result = { md: payload.md, title: (payload.title || 'Untitled').slice(0, 200) };
   if (['obsidian', 'paper', 'midnight'].includes(payload.theme)) result.theme = payload.theme;
-  if (payload.selection && Number.isSafeInteger(payload.selection.start) && Number.isSafeInteger(payload.selection.end)
-      && payload.selection.start >= 0 && payload.selection.end > payload.selection.start && typeof payload.selection.quote === 'string') {
+  const range = item => item && Number.isSafeInteger(item.start) && Number.isSafeInteger(item.end)
+    && item.start >= 0 && item.end > item.start && item.end - item.start <= 20000
+    && typeof item.quote === 'string' && item.quote.length === item.end - item.start;
+  if (payload.selection && range(payload.selection)) {
     result.selection = { start: payload.selection.start, end: payload.selection.end, quote: payload.selection.quote };
+  }
+  if (Array.isArray(payload.highlights)) {
+    const highlights = payload.highlights.filter(range).slice(0, 40)
+      .map(item => ({ start: item.start, end: item.end, quote: item.quote }));
+    if (highlights.length) result.highlights = highlights;
   }
   return result;
 }

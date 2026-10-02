@@ -17,12 +17,12 @@ Save your note in [mdw.nvim](https://github.com/lmdevv/mdw.nvim) and run:
 
 ## Sharing
 
-Select **Share** to get a link or a QR code. To share one passage, select some text first:
+Select text and choose **Highlight**. You can mark several passages. **Share** sends the whole note with all of them.
 
-| Option | Includes |
-| --- | --- |
-| Share passage | Only the selected text |
-| Share in context | The full document, with the selection highlighted |
+- \`S\` opens share
+- \`Y\` copies the link
+- \`H\` highlights the selected text
+- \`Ctrl\` or \`Cmd\` \`K\` jumps to a heading
 
 Edits made here produce a new link. They are never written back to the original file.
 
@@ -32,6 +32,13 @@ Edits made here produce a new link. They are never written back to the original 
 - Obsidian callouts
 - Syntax-highlighted code
 - KaTeX math and Mermaid diagrams
+- Images and videos, including Obsidian embeds
+
+![Earth from space](https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=60)
+
+![video](https://youtu.be/DHoZPOyw1Yg)
+
+A vault file stays a placeholder: ![[diagram.png]]
 
 A checklist:
 
@@ -47,6 +54,6 @@ flowchart LR
   A[Markdown] --> B[Compressed link] --> C[Rendered page]
 \`\`\`
 
-[^1]: Images and videos are not included in links. They appear as placeholders.
+[^1]: A picture or video at a web address is shown. A file that exists only in a vault is a placeholder.
 `,
 };
