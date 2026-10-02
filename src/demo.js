@@ -1,61 +1,52 @@
 export const demo = {
-  title: 'A little room for your words',
-  md: `# A little room for your words
+  title: 'Welcome to mdweb',
+  md: `# Welcome to mdweb
 
-Open a note, settle into a theme, and send it to someone. **mdweb** is a quiet place to read Markdown, wherever you are.
+mdweb renders Markdown in your browser and shares it as a link. The document is stored in the link itself, so there is no server, account, or upload.
 
-> [!note] A document that travels
-> The document lives in your link. Open it on your phone or share it with a friend—there is no account to create.
+> [!note]
+> Open a file from the **⋯** menu, drop one onto this page, or select **Edit** to paste Markdown.
 
-## From your editor to anywhere
+## From Neovim
 
-In Neovim, save your note and run:
+Save your note in [mdw.nvim](https://github.com/lmdevv/mdw.nvim) and run:
 
-\
 \`\`\`vim
-:mdw preview browser
+:Mdw preview browser
 \`\`\`
 
-You can also **open a Markdown file** here, or use **Edit** to paste your own. Select a sentence to share a passage, or share the whole document with its context.
+## Sharing
 
-## Made for reading
+Select **Share** to get a link or a QR code. To share one passage, select some text first:
 
-- A complete outline to find your way.
-- Light and dark appearances, with three reading themes.
-- Tables, footnotes, ==highlights==, and checklists.
-- Equations and diagrams when your thoughts need them.
-
-| A small detail | Why it helps |
+| Option | Includes |
 | --- | --- |
-| Share a passage | Bring someone straight to your point |
-| Scan a QR code | Pick up reading on your phone |
-| Download Markdown | Keep a copy you can edit anywhere |
+| Share passage | Only the selected text |
+| Share in context | The full document, with the selection highlighted |
 
-### A checklist for a good note
+Edits made here produce a new link. They are never written back to the original file.
 
-- [x] Say something clearly
-- [x] Give it room to breathe
-- [ ] Share it with someone
+## Supported syntax
 
-## Ideas, illustrated
+- Tables, task lists, footnotes,[^1] and ==highlights==
+- Obsidian callouts
+- Syntax-highlighted code
+- KaTeX math and Mermaid diagrams
 
-An equation can say a lot in a little space:
+A checklist:
 
-$$E = mc^2$$
+- [x] Write the note
+- [ ] Share it
 
-And a diagram can help connect the pieces:
+$$
+\\int_0^1 x^2\\,dx = \\tfrac{1}{3}
+$$
 
 \`\`\`mermaid
 flowchart LR
-  A[Write in Neovim] --> B[Open in mdweb]
-  B --> C[Read anywhere]
-  B --> D[Share a passage]
+  A[Markdown] --> B[Compressed link] --> C[Rendered page]
 \`\`\`
 
-## Yours to take with you
-
-Choose **Share** for a link or QR code. Choose **Download** for the original Markdown. Changes made here create a new snapshot; your file in Neovim stays as you saved it.[^snapshot]
-
-[^snapshot]: Images and videos are outside this first version. Local attachments are shown as placeholders.
+[^1]: Images and videos are not included in links. They appear as placeholders.
 `,
 };

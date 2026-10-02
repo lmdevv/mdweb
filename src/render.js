@@ -29,7 +29,7 @@ export async function renderMarkdown(source, target) {
   }
   for (const block of target.querySelectorAll('blockquote')) {
     const first = block.querySelector('p');
-    const match = first?.textContent.match(/^\[!([\w-]+)\]([+-])?\s*(.*)/);
+    const match = first?.textContent.match(/^\[!([\w-]+)\]([+-])?[ \t]*(.*)/);
     if (!match) continue;
     const title = document.createElement('div');
     title.className = 'callout-title';
@@ -69,7 +69,13 @@ export async function renderMarkdown(source, target) {
     if (target.querySelector('.mermaid-source')) {
       try {
         const { default: mermaid } = await import('mermaid');
-        mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', htmlLabels: false, theme: document.documentElement.dataset.appearance === 'light' ? 'default' : 'dark', suppressErrorRendering: true });
+        const css = getComputedStyle(document.documentElement);
+        const v = name => css.getPropertyValue(name).trim();
+        mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', htmlLabels: false, suppressErrorRendering: true, theme: 'base', themeVariables: {
+          darkMode: document.documentElement.dataset.appearance !== 'light', background: v('--bg'), fontFamily: v('--ui-font'), fontSize: '14px',
+          primaryColor: v('--code'), primaryBorderColor: v('--border-strong'), primaryTextColor: v('--text'), lineColor: v('--muted'),
+          secondaryColor: v('--surface'), tertiaryColor: v('--bg'), dropShadow: 'none',
+        } });
         for (const [i, pre] of [...target.querySelectorAll('.mermaid-source')].entries()) {
           try {
             const { svg } = await mermaid.render(`diagram-${Date.now()}-${i}`, pre.textContent);

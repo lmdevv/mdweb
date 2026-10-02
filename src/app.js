@@ -11,7 +11,8 @@ let observer;
 let renderVersion = 0;
 let toastTimer;
 let appearance = readPreference('appearance') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-let fontSize = 17;
+let fontSize = 16;
+const narrow = matchMedia('(max-width: 1023px)');
 
 function readPreference(key) { try { return localStorage.getItem('mdweb-' + key); } catch { return null; } }
 function savePreference(key, value) { try { localStorage.setItem('mdweb-' + key, value); } catch { /* Storage is optional. */ } }
@@ -19,17 +20,19 @@ function notify(message) {
   $('toast').textContent = message; $('toast').hidden = false;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 3500);
 }
+function syncThemeColor() {
+  document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+}
 function appearanceChanged() {
   document.documentElement.dataset.appearance = appearance;
-  $('appearance').textContent = appearance === 'dark' ? '☀' : '☾';
   $('appearance').setAttribute('aria-label', `Switch to ${appearance === 'dark' ? 'light' : 'dark'} appearance`);
-  document.querySelector('meta[name="theme-color"]').content = appearance === 'dark' ? '#19181d' : '#faf9f6';
+  syncThemeColor();
 }
 appearanceChanged();
 
 function renderOutline(headings) {
   $('outline').replaceChildren();
-  $('heading-count').textContent = headings.length;
+  document.body.classList.toggle('no-outline', headings.length < 2);
   const minLevel = Math.min(...headings.map(h => h.level), 1);
   for (const heading of headings) {
     const link = document.createElement('a');
@@ -38,11 +41,10 @@ function renderOutline(headings) {
     link.dataset.heading = heading.id;
     link.addEventListener('click', event => {
       event.preventDefault(); document.getElementById(heading.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (innerWidth <= 800) toggleOutline(false);
+      if (narrow.matches) toggleOutline(false);
     });
     $('outline').append(link);
   }
-  if (!headings.length) $('outline').textContent = 'No headings in this note.';
   observer?.disconnect();
   observer = new IntersectionObserver(entries => {
     for (const entry of entries) if (entry.isIntersecting) {
@@ -62,9 +64,9 @@ async function render() {
   $('selection-actions').hidden = true; passage = null;
   document.title = `${payload.title} — mdweb`;
   $('document-name').textContent = payload.title;
-  $('reading-time').textContent = `${Math.max(1, Math.ceil(payload.md.split(/\s+/u).length / 220))} MIN READ`;
   $('theme').value = payload.theme || readPreference('theme') || 'obsidian';
   document.documentElement.dataset.theme = $('theme').value;
+  syncThemeColor();
   $('source').value = payload.md;
   const { headings, enhance } = await renderMarkdown(payload.md, article);
   if (version !== renderVersion) return;
@@ -79,7 +81,7 @@ async function load() {
     payload = location.hash ? await decodeHash(location.hash) : { ...demo };
     await render();
   } catch (error) {
-    article.replaceChildren(); $('outline').replaceChildren();
+    article.replaceChildren(); $('outline').replaceChildren(); document.body.classList.add('no-outline');
     $('error').textContent = `${error.message} Open a Markdown file to start again.`; $('error').hidden = false;
     $('document-name').textContent = 'Unable to open document';
   }
@@ -90,12 +92,24 @@ function toggleOutline(force) {
   document.body.classList.toggle('outline-open', open); $('outline-toggle').setAttribute('aria-expanded', String(open));
 }
 $('outline-toggle').addEventListener('click', () => toggleOutline());
+document.addEventListener('click', event => {
+  if (document.body.classList.contains('outline-open') && !event.target.closest('#sidebar, #outline-toggle')) toggleOutline(false);
+});
+document.addEventListener('keydown', event => { if (event.key === 'Escape') toggleOutline(false); });
+addEventListener('scroll', () => document.body.classList.toggle('scrolled', scrollY > 4), { passive: true });
+$('menu').addEventListener('beforetoggle', event => {
+  if (event.newState !== 'open') return;
+  const anchor = $('more').getBoundingClientRect();
+  $('menu').style.top = anchor.bottom + 6 + 'px';
+  $('menu').style.right = Math.max(8, innerWidth - anchor.right) + 'px';
+});
+for (const item of $('menu').querySelectorAll('.menu-item')) item.addEventListener('click', () => $('menu').hidePopover());
 $('appearance').addEventListener('click', () => { appearance = appearance === 'dark' ? 'light' : 'dark'; savePreference('appearance', appearance); appearanceChanged(); render().catch(error => notify(error.message)); });
-$('theme').addEventListener('change', () => { payload.theme = $('theme').value; document.documentElement.dataset.theme = payload.theme; savePreference('theme', payload.theme); });
+$('theme').addEventListener('change', () => { payload.theme = $('theme').value; document.documentElement.dataset.theme = payload.theme; savePreference('theme', payload.theme); syncThemeColor(); });
 for (const [id, delta] of [['smaller', -1], ['larger', 1]]) $(id).addEventListener('click', () => { fontSize = Math.max(13, Math.min(24, fontSize + delta)); document.documentElement.style.setProperty('--reading-size', fontSize + 'px'); });
 $('edit-toggle').addEventListener('click', () => {
   const open = $('editor').hidden; $('editor').hidden = !open; document.body.classList.toggle('editing', open);
-  $('edit-toggle').classList.toggle('selected', open); $('edit-toggle').setAttribute('aria-pressed', String(open));
+  $('edit-toggle').setAttribute('aria-pressed', String(open));
   if (open) { $('source').value = payload.md; $('source').focus(); }
 });
 $('apply').addEventListener('click', async () => {
