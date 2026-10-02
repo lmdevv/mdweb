@@ -61,5 +61,10 @@ vim.cmd('Mdw preview browser')
     const payload = await decodeHash(url.hash);
     assert.equal(payload.md, fixture.md);
     assert.equal(payload.title, '日本語 note');
+    const json = inflateRawSync(Buffer.from(new URLSearchParams(url.hash.slice(1)).get('doc'), 'base64url')).toString('utf8');
+    assert.equal(json, JSON.stringify({ md: fixture.md, title: '日本語 note' }), 'Lua JSON field order is stable');
+    const again = spawnSync('nvim', ['--headless', '-u', 'NONE', '-i', 'NONE', '-n', '-l', script], { encoding: 'utf8', env: { ...process.env, MDWEB_PLUGIN: plugin, MDWEB_NOTE: note } });
+    assert.equal(again.status, 0, again.stderr);
+    assert.equal(again.stdout, result.stdout, 'independent Neovim processes generate identical URLs');
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
