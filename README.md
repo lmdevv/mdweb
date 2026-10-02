@@ -46,6 +46,9 @@ npm run dev     # http://localhost:5184
 npm run deploy  # Cloudflare Workers static assets
 ```
 
+Pushes to `main` deploy automatically once tests pass. This requires a
+`CLOUDFLARE_API_TOKEN` repository secret.
+
 ## License
 
 MIT
