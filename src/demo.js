@@ -36,7 +36,7 @@ Edits made here produce a new link. They are never written back to the original 
 
 ![Earth from space](https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=60)
 
-![video](https://youtu.be/DHoZPOyw1Yg)
+![video](https://youtu.be/dQw4w9WgXcQ)
 
 A vault file stays a placeholder: ![[diagram.png]]
 
